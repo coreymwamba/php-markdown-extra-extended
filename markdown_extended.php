@@ -19,6 +19,7 @@ class MarkdownExtraExtended_Parser extends MarkdownExtra_Parser {
 			"doFencedFigures" => 7,
 		);
 		$this->span_gamut += array(
+			"doQuotes" => -50,
 			"doStrikethroughs" => -35
 		);
 		parent::MarkdownExtra_Parser();
@@ -38,10 +39,11 @@ class MarkdownExtraExtended_Parser extends MarkdownExtra_Parser {
 	}
 
 
+
 	function doBlockQuotes($text) {
 		$text = preg_replace_callback('/
 			(?>^[ ]*>[ ]?
-				(?:\((.+?)\))?
+				(?:\{(.+?)\})?
 				[ ]*(.+\n(?:.+\n)*)
 			)+	
 			/xm',
@@ -49,9 +51,11 @@ class MarkdownExtraExtended_Parser extends MarkdownExtra_Parser {
 
 		return $text;
 	}
-	
+# >{link|title} text will give <blockquote title="title" cite="link">text</blockquote>	
 	function _doBlockQuotes_callback($matches) {
-		$cite = $matches[1];
+		$cite_title_array = explode('|',$matches[1],2);
+		$cite = $cite_title_array[0];
+		$bq_title = $cite_title_array[1];
 		$bq = '> ' . $matches[2];
 		# trim one level of quoting - trim whitespace-only lines
 		$bq = preg_replace('/^[ ]*>[ ]?|^[ ]+$/m', '', $bq);
@@ -64,9 +68,16 @@ class MarkdownExtraExtended_Parser extends MarkdownExtra_Parser {
 			array(&$this, '_doBlockQuotes_callback2'), $bq);
 		
 		$res = "<blockquote";
+		$res .= empty($bq_title) ? "" : " title=\"$bq_title\"";
 		$res .= empty($cite) ? ">" : " cite=\"$cite\">";
 		$res .= "\n$bq\n</blockquote>";
 		return "\n". $this->hashBlock($res)."\n\n";
+	}
+
+	function _doBlockQuotes_callback2($matches) {
+		$pre = $matches[1];
+		$pre = preg_replace('/^  /m', '', $pre);
+		return $pre;
 	}
 
 	function doFencedCodeBlocks($text) {
@@ -173,5 +184,27 @@ class MarkdownExtraExtended_Parser extends MarkdownExtra_Parser {
 		$res = "<del>" . $matches[1] . "</del>";
 		return $this->hashBlock($res);
 	}
+	function doQuotes($text) {
+	#
+	# Replace %%{link|title} some quotation%% with <q title="title" cite="link">some quotation</q>
+	#
+		$text = preg_replace_callback('{
+				%%(?:\{(.+?)\})?([^%%]+)%%
+			}xm',
+			array(&$this, '_doQuotes_callback'), $text);
+		return $text;
+	}
+	function _doQuotes_callback($matches) {
+                $qct = explode('|',$matches[1],2);
+                $cite = $qct[0];
+                $qtitle = $qct[1];
+		$res = "<q";
+		$res .= empty($qtitle) ? "" : " title=\"$qtitle\"";
+                $res .=  empty($cite) ? ">" : " cite=\"$cite\">";
+                $res .= $matches[2] . "</q>";
+		return $this->hashBlock($res);
+	}
+	
+	
 }
 ?>
