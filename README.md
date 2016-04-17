@@ -13,19 +13,19 @@ In <abbr title="PHP Markdown (Extra)">PME</abbr>, when you want to insert a `<br
 
 Two returns does not insert a `<br />`, but instead creates a new paragraph as usual.
 
-### Support for *cite* attribute on blockquotes
+### Support for *cite* and *title* attributes on blockquotes
 It is now possible to add the optional *cite* attribute to the *blockquote* element.
 
 The new, optional, syntax is:
 
 ```markdown
-> (cite url) Cited content follows ...
+> {cite url|title} Cited content follows ...
 ```
 
 #### Example:
 
 ```markdown
-> (http://www.whatwg.org/) Content inside a blockquote must be quoted 
+> {https://developers.whatwg.org/grouping-content.html#the-blockquote-element|The Blockquote Element, WHATWG} Content inside a blockquote must be quoted 
 > from another source, whose address, if it has one, 
 > may be cited in the `cite` attribute.
 ```
@@ -33,11 +33,29 @@ The new, optional, syntax is:
 Will result in the following HTML:
 
 ```html
-<blockquote cite="http://www.whatwg.org/">
+<blockquote title="The Blockquote Element, WHATWG" cite="https://developers.whatwg.org/grouping-content.html#the-blockquote-element">
 <p>Content inside a blockquote must be quoted 
 from another source, whose address, if it has one, 
 may be cited in the `cite` attribute.</p>
 </blockquote>
+```
+### The quote element
+For in-line quotations, you can now use the *q* element; this also has support for cite and title elements so you can apply proper attribution.
+
+The syntax: 
+
+```markdown
+%%{cite url|title}text%%
+```
+So this: 
+
+```markdown
+Debussy saw music as %%{http://www.worldcat.org/title/encyclopedia-of-quotations-about-music/oclc/611526492|Nat Shapiro, 'An Encyclopedia of Quotations About Music' (1981) p.268}a free art gushing forth - an open-air art, boundless as the elements, the wind, the sky, the sea.%% He wanted to free music from older traditions.
+```
+will give you
+
+```html
+<p>Debussy saw music as <q cite="http://www.worldcat.org/title/encyclopedia-of-quotations-about-music/oclc/611526492" title="Nat Shapiro, 'An Encyclopedia of Quotations About Music' (1981) p.268">a free art gushing forth - an open-air art, boundless as the elements, the wind, the sky, the sea.</q> He wanted to free music from older traditions.</p>
 ```
 
 #### Breaking changes from <abbr title="PHP Markdown (Extra)">PME</abbr>
